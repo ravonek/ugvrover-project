@@ -1,0 +1,150 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+
+  - Class: rviz_common/Selection
+    Name: Selection
+
+  - Class: rviz_common/Tool Properties
+    Name: Tool Properties
+
+  - Class: rviz_common/Views
+    Name: Views
+
+  - Class: nav2_rviz_plugins/Navigation 2
+    Name: Navigation 2
+
+Visualization Manager:
+  Class: ""
+
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Grid
+      Enabled: true
+      Reference Frame: <Fixed Frame>
+
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Enabled: true
+      Frames:
+        All Enabled: false
+        map:
+          Value: true
+        odom:
+          Value: true
+        base_footprint:
+          Value: true
+        base_link:
+          Value: true
+        base_lidar_link:
+          Value: true
+      Tree:
+        map:
+          odom:
+            base_footprint:
+              base_link:
+                base_lidar_link: {}
+      Value: true
+
+    - Class: rviz_default_plugins/LaserScan
+      Name: LaserScan
+      Enabled: true
+      Topic:
+        Value: /scan
+      Reliability Policy: Best Effort
+      Use Fixed Frame: true
+
+    - Class: rviz_default_plugins/Map
+      Name: Map
+      Enabled: true
+      Topic:
+        Value: /map
+      Update Topic:
+        Value: /map_updates
+
+    - Class: nav2_rviz_plugins/ParticleCloud
+      Name: Amcl Particle Swarm
+      Enabled: true
+      Topic:
+        Value: /particle_cloud
+
+    - Class: rviz_common/Group
+      Name: Global Planner
+      Enabled: true
+      Displays:
+        - Class: rviz_default_plugins/Map
+          Name: Global Costmap
+          Enabled: true
+          Topic:
+            Value: /global_costmap/costmap
+          Update Topic:
+            Value: /global_costmap/costmap_updates
+
+        - Class: rviz_default_plugins/Path
+          Name: Path
+          Enabled: true
+          Topic:
+            Value: /plan
+
+    - Class: rviz_common/Group
+      Name: Controller
+      Enabled: true
+      Displays:
+        - Class: rviz_default_plugins/Map
+          Name: Local Costmap
+          Enabled: false
+          Topic:
+            Value: /local_costmap/costmap
+          Update Topic:
+            Value: /local_costmap/costmap_updates
+
+        - Class: rviz_default_plugins/Path
+          Name: Local Plan
+          Enabled: true
+          Topic:
+            Value: /local_plan
+
+        - Class: rviz_default_plugins/Polygon
+          Name: Polygon
+          Enabled: true
+          Topic:
+            Value: /local_costmap/published_footprint
+
+  Global Options:
+    Fixed Frame: map
+    Background Color: 48; 48; 48
+    Frame Rate: 30
+
+  Tools:
+    - Class: rviz_default_plugins/MoveCamera
+
+    - Class: rviz_default_plugins/Select
+
+    - Class: rviz_default_plugins/FocusCamera
+
+    - Class: rviz_default_plugins/Measure
+
+    - Class: rviz_default_plugins/SetInitialPose
+      Topic:
+        Value: /initialpose
+
+    - Class: rviz_default_plugins/PublishPoint
+      Topic:
+        Value: /clicked_point
+
+    - Class: nav2_rviz_plugins/GoalTool
+
+  Views:
+    Current:
+      Class: rviz_default_plugins/TopDownOrtho
+      Target Frame: <Fixed Frame>
+      Scale: 30
+      Angle: 0
+      X: 0
+      Y: 0
+
+Window Geometry:
+  Height: 893
+  Width: 1610
+  X: 906
+  Y: 259

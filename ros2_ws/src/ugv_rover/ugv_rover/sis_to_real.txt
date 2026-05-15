@@ -1,0 +1,216 @@
+#!/usr/bin/env python3
+
+import math
+import time
+from dataclasses import dataclass
+from typing import Optional
+
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
+
+
+def clamp(value: float, lo: float, hi: float) -> float:
+    return max(lo, min(hi, value))
+
+
+def quat_to_yaw(x: float, y: float, z: float, w: float) -> float:
+    siny_cosp = 2.0 * (w * z + x * y)
+    cosy_cosp = 1.0 - 2.0 * (y * y + z * z)
+    return math.atan2(siny_cosp, cosy_cosp)
+
+
+def normalize_angle(angle: float) -> float:
+    while angle > math.pi:
+        angle -= 2.0 * math.pi
+    while angle < -math.pi:
+        angle += 2.0 * math.pi
+    return angle
+
+
+@dataclass
+class Pose2DState:
+    x: float
+    y: float
+    yaw: float
+
+
+class SimRealSyncGuard(Node):
+    def __init__(self):
+        super().__init__("sim_real_sync_guard")
+
+        self.declare_parameter("cmd_in_topic", "/cmd_vel_sim")
+        self.declare_parameter("cmd_real_topic", "/cmd_vel")
+        self.declare_parameter("odom_sim_topic", "/odom_sim")
+        self.declare_parameter("odom_real_topic", "/odom")
+
+        self.declare_parameter("control_rate", 50.0)
+        self.declare_parameter("cmd_timeout", 0.3)
+
+        self.declare_parameter("lead_distance_soft", 0.05)
+        self.declare_parameter("lead_distance_hard", 0.12)
+        self.declare_parameter("lead_yaw_soft", 0.08)
+        self.declare_parameter("lead_yaw_hard", 0.18)
+
+        self.declare_parameter("min_scale", 0.0)
+        self.declare_parameter("max_scale", 1.0)
+
+        self.declare_parameter("real_linear_gain", 0.67)
+        self.declare_parameter("real_angular_gain", 1.33)
+
+        self.declare_parameter("linear_cmd_eps", 0.001)
+        self.declare_parameter("angular_cmd_eps", 0.001)
+
+        self.cmd_in_topic = self.get_parameter("cmd_in_topic").value
+        self.cmd_real_topic = self.get_parameter("cmd_real_topic").value
+        self.odom_sim_topic = self.get_parameter("odom_sim_topic").value
+        self.odom_real_topic = self.get_parameter("odom_real_topic").value
+
+        self.control_rate = float(self.get_parameter("control_rate").value)
+        self.cmd_timeout = float(self.get_parameter("cmd_timeout").value)
+
+        self.lead_distance_soft = float(self.get_parameter("lead_distance_soft").value)
+        self.lead_distance_hard = float(self.get_parameter("lead_distance_hard").value)
+        self.lead_yaw_soft = float(self.get_parameter("lead_yaw_soft").value)
+        self.lead_yaw_hard = float(self.get_parameter("lead_yaw_hard").value)
+
+        self.min_scale = float(self.get_parameter("min_scale").value)
+        self.max_scale = float(self.get_parameter("max_scale").value)
+
+        self.real_linear_gain = float(self.get_parameter("real_linear_gain").value)
+        self.real_angular_gain = float(self.get_parameter("real_angular_gain").value)
+
+        self.linear_cmd_eps = float(self.get_parameter("linear_cmd_eps").value)
+        self.angular_cmd_eps = float(self.get_parameter("angular_cmd_eps").value)
+
+        self.last_cmd = Twist()
+        self.last_cmd_time = 0.0
+
+        self.sim_pose: Optional[Pose2DState] = None
+        self.real_pose: Optional[Pose2DState] = None
+
+        self.motion_active = False
+        self.start_sim_pose: Optional[Pose2DState] = None
+        self.start_real_pose: Optional[Pose2DState] = None
+
+        self.create_subscription(Twist, self.cmd_in_topic, self.cmd_in_callback, 10)
+        self.create_subscription(Odometry, self.odom_sim_topic, self.odom_sim_callback, 20)
+        self.create_subscription(Odometry, self.odom_real_topic, self.odom_real_callback, 20)
+
+        self.cmd_real_pub = self.create_publisher(Twist, self.cmd_real_topic, 10)
+
+        self.create_timer(1.0 / self.control_rate, self.timer_callback)
+
+        self.get_logger().info("SimRealSyncGuard started")
+        self.get_logger().info(f"control_rate={self.control_rate}")
+        self.get_logger().info(f"real_linear_gain={self.real_linear_gain}")
+        self.get_logger().info(f"real_angular_gain={self.real_angular_gain}")
+
+    def cmd_in_callback(self, msg):
+        self.last_cmd = msg
+        self.last_cmd_time = time.time()
+
+    def odom_sim_callback(self, msg):
+        self.sim_pose = self.to_pose(msg)
+
+    def odom_real_callback(self, msg):
+        self.real_pose = self.to_pose(msg)
+
+    def to_pose(self, msg):
+        p = msg.pose.pose.position
+        q = msg.pose.pose.orientation
+        yaw = quat_to_yaw(q.x, q.y, q.z, q.w)
+        return Pose2DState(p.x, p.y, yaw)
+
+    def is_cmd_active(self, cmd):
+        return (
+            abs(cmd.linear.x) > self.linear_cmd_eps or
+            abs(cmd.angular.z) > self.angular_cmd_eps
+        )
+
+    def publish_stop(self):
+        self.cmd_real_pub.publish(Twist())
+        self.motion_active = False
+
+    def publish_gain_only(self, cmd):
+        out = Twist()
+        out.linear.x = cmd.linear.x * self.real_linear_gain
+        out.angular.z = cmd.angular.z * self.real_angular_gain
+        self.cmd_real_pub.publish(out)
+
+    def timer_callback(self):
+        now = time.time()
+
+        if now - self.last_cmd_time > self.cmd_timeout:
+            self.publish_stop()
+            return
+
+        cmd = self.last_cmd
+
+        if not self.is_cmd_active(cmd):
+            self.publish_stop()
+            return
+
+        # fallback: если odom пока нет, всё равно едем
+        if self.sim_pose is None or self.real_pose is None:
+            self.publish_gain_only(cmd)
+            return
+
+        if not self.motion_active:
+            self.motion_active = True
+            self.start_sim_pose = self.sim_pose
+            self.start_real_pose = self.real_pose
+
+        sim_dist = math.hypot(
+            self.sim_pose.x - self.start_sim_pose.x,
+            self.sim_pose.y - self.start_sim_pose.y
+        )
+
+        real_dist = math.hypot(
+            self.real_pose.x - self.start_real_pose.x,
+            self.real_pose.y - self.start_real_pose.y
+        )
+
+        sim_yaw = abs(normalize_angle(self.sim_pose.yaw - self.start_sim_pose.yaw))
+        real_yaw = abs(normalize_angle(self.real_pose.yaw - self.start_real_pose.yaw))
+
+        lead_dist = real_dist - sim_dist
+        lead_yaw = real_yaw - sim_yaw
+
+        scale = 1.0
+
+        if lead_dist > self.lead_distance_soft:
+            scale *= 0.5
+        if lead_dist > self.lead_distance_hard:
+            scale = 0.0
+
+        if lead_yaw > self.lead_yaw_soft:
+            scale *= 0.5
+        if lead_yaw > self.lead_yaw_hard:
+            scale = 0.0
+
+        scale = clamp(scale, self.min_scale, self.max_scale)
+
+        out = Twist()
+        out.linear.x = cmd.linear.x * scale * self.real_linear_gain
+        out.angular.z = cmd.angular.z * scale * self.real_angular_gain
+
+        self.cmd_real_pub.publish(out)
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = SimRealSyncGuard()
+
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+
+    node.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == "__main__":
+    main()

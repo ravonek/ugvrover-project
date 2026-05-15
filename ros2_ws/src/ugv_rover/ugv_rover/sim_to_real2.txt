@@ -1,0 +1,217 @@
+#!/usr/bin/env python3
+
+import math
+import time
+from dataclasses import dataclass
+from typing import Optional
+
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
+
+
+def clamp(value: float, lo: float, hi: float) -> float:
+    return max(lo, min(hi, value))
+
+
+def quat_to_yaw(x: float, y: float, z: float, w: float) -> float:
+    siny_cosp = 2.0 * (w * z + x * y)
+    cosy_cosp = 1.0 - 2.0 * (y * y + z * z)
+    return math.atan2(siny_cosp, cosy_cosp)
+
+
+def normalize_angle(angle: float) -> float:
+    while angle > math.pi:
+        angle -= 2.0 * math.pi
+    while angle < -math.pi:
+        angle += 2.0 * math.pi
+    return angle
+
+
+@dataclass
+class Pose2DState:
+    x: float
+    y: float
+    yaw: float
+
+
+class SimRealSyncGuard(Node):
+    def __init__(self):
+        super().__init__("sim_real_sync_guard")
+
+        self.declare_parameter("cmd_in_topic", "/cmd_vel_sim")
+        self.declare_parameter("cmd_real_topic", "/cmd_vel")
+        self.declare_parameter("odom_sim_topic", "/odom_sim")
+        self.declare_parameter("odom_real_topic", "/odom")
+
+        self.declare_parameter("control_rate", 50.0)
+        self.declare_parameter("cmd_timeout", 0.5)
+
+        # FOLLOW mode: real velocity = sim velocity * gain
+        self.declare_parameter("real_linear_gain", 0.67)
+        self.declare_parameter("real_angular_gain", 1.2)
+
+        # Soft yaw correction after /cmd_vel_sim stops
+        self.declare_parameter("kp_angular", 0.6)
+        self.declare_parameter("max_correction_angular", 0.12)
+        self.declare_parameter("angular_deadband", 0.08)
+
+        self.declare_parameter("linear_cmd_eps", 0.001)
+        self.declare_parameter("angular_cmd_eps", 0.001)
+
+        self.cmd_in_topic = self.get_parameter("cmd_in_topic").value
+        self.cmd_real_topic = self.get_parameter("cmd_real_topic").value
+        self.odom_sim_topic = self.get_parameter("odom_sim_topic").value
+        self.odom_real_topic = self.get_parameter("odom_real_topic").value
+
+        self.control_rate = float(self.get_parameter("control_rate").value)
+        self.cmd_timeout = float(self.get_parameter("cmd_timeout").value)
+
+        self.real_linear_gain = float(self.get_parameter("real_linear_gain").value)
+        self.real_angular_gain = float(self.get_parameter("real_angular_gain").value)
+
+        self.kp_angular = float(self.get_parameter("kp_angular").value)
+        self.max_correction_angular = float(self.get_parameter("max_correction_angular").value)
+        self.angular_deadband = float(self.get_parameter("angular_deadband").value)
+
+        self.linear_cmd_eps = float(self.get_parameter("linear_cmd_eps").value)
+        self.angular_cmd_eps = float(self.get_parameter("angular_cmd_eps").value)
+
+        self.last_cmd = Twist()
+        self.last_cmd_time = 0.0
+
+        self.sim_pose: Optional[Pose2DState] = None
+        self.real_pose: Optional[Pose2DState] = None
+
+        self.motion_active = False
+        self.start_sim_yaw: Optional[float] = None
+        self.start_real_yaw: Optional[float] = None
+
+        self.create_subscription(Twist, self.cmd_in_topic, self.cmd_callback, 10)
+        self.create_subscription(Odometry, self.odom_sim_topic, self.odom_sim_callback, 20)
+        self.create_subscription(Odometry, self.odom_real_topic, self.odom_real_callback, 20)
+
+        self.cmd_pub = self.create_publisher(Twist, self.cmd_real_topic, 10)
+        self.create_timer(1.0 / self.control_rate, self.timer_callback)
+
+        self.get_logger().info("SimRealSyncGuard started: FOLLOW + SOFT YAW CORRECTION")
+        self.get_logger().info(f"real_linear_gain={self.real_linear_gain}")
+        self.get_logger().info(f"real_angular_gain={self.real_angular_gain}")
+        self.get_logger().info(f"kp_angular={self.kp_angular}")
+        self.get_logger().info(f"max_correction_angular={self.max_correction_angular}")
+
+    def cmd_callback(self, msg):
+        self.last_cmd = msg
+        self.last_cmd_time = time.time()
+
+    def odom_sim_callback(self, msg):
+        self.sim_pose = self.to_pose(msg)
+
+    def odom_real_callback(self, msg):
+        self.real_pose = self.to_pose(msg)
+
+    def to_pose(self, msg):
+        p = msg.pose.pose.position
+        q = msg.pose.pose.orientation
+        return Pose2DState(
+            x=p.x,
+            y=p.y,
+            yaw=quat_to_yaw(q.x, q.y, q.z, q.w),
+        )
+
+    def is_cmd_active(self, cmd):
+        return (
+            abs(cmd.linear.x) > self.linear_cmd_eps or
+            abs(cmd.angular.z) > self.angular_cmd_eps
+        )
+
+    def publish_stop(self):
+        self.cmd_pub.publish(Twist())
+        self.motion_active = False
+        self.start_sim_yaw = None
+        self.start_real_yaw = None
+
+    def publish_follow_cmd(self, cmd):
+        out = Twist()
+        out.linear.x = cmd.linear.x * self.real_linear_gain
+        out.angular.z = cmd.angular.z * self.real_angular_gain
+        self.cmd_pub.publish(out)
+
+    def timer_callback(self):
+        now = time.time()
+        cmd = self.last_cmd
+
+        cmd_is_fresh = (now - self.last_cmd_time) <= self.cmd_timeout
+        cmd_is_active = self.is_cmd_active(cmd)
+
+        # If no odom yet, still drive by gain bridge
+        if self.sim_pose is None or self.real_pose is None:
+            if cmd_is_fresh and cmd_is_active:
+                self.publish_follow_cmd(cmd)
+            else:
+                self.cmd_pub.publish(Twist())
+            return
+
+        # FOLLOW MODE
+        if cmd_is_fresh and cmd_is_active:
+            if not self.motion_active:
+                self.motion_active = True
+                self.start_sim_yaw = self.sim_pose.yaw
+                self.start_real_yaw = self.real_pose.yaw
+
+            self.publish_follow_cmd(cmd)
+            return
+
+        # YAW CORRECTION MODE
+        if self.motion_active:
+            if self.start_sim_yaw is None or self.start_real_yaw is None:
+                self.publish_stop()
+                return
+
+            sim_delta_yaw = normalize_angle(self.sim_pose.yaw - self.start_sim_yaw)
+            real_delta_yaw = normalize_angle(self.real_pose.yaw - self.start_real_yaw)
+
+            error_yaw = normalize_angle(sim_delta_yaw - real_delta_yaw)
+
+            angular = self.kp_angular * error_yaw
+
+            if abs(error_yaw) < self.angular_deadband:
+                angular = 0.0
+
+            angular = clamp(
+                angular,
+                -self.max_correction_angular,
+                self.max_correction_angular,
+            )
+
+            out = Twist()
+            out.linear.x = 0.0
+            out.angular.z = angular
+            self.cmd_pub.publish(out)
+
+            if angular == 0.0:
+                self.get_logger().info("Yaw correction finished.")
+                self.publish_stop()
+
+            return
+
+        self.cmd_pub.publish(Twist())
+
+
+def main(args=None):
+    rclpy.init(args=args)
+
+    node = SimRealSyncGuard()
+
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+
+    node.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == "__main__":
+    main()

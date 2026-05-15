@@ -1,0 +1,331 @@
+<?xml version="1.0" ?>
+<robot name="ghfvjkvxcjvydfxczvzxv" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:include filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/urdf/materials.xacro" />
+<xacro:include filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/urdf/ghfvjkvxcjvydfxczvzxv.trans" />
+<xacro:include filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/urdf/ghfvjkvxcjvydfxczvzxv.gazebo" />
+<link name="base_link">
+  <inertial>
+    <origin xyz="-0.021084081655003986 0.011318361388304094 -0.025380346744993502" rpy="0 0 0"/>
+    <mass value="6.0510168619679305"/>
+    <inertia ixx="0.025174" iyy="0.033699" izz="0.053539" ixy="-0.000128" iyz="-4.3e-05" ixz="0.000105"/>
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="upperbase_1">
+  <inertial>
+    <origin xyz="0.002665887097811223 0.039095578896360214 0.019124791623016536" rpy="0 0 0"/>
+    <mass value="1.5394522343712382"/>
+    <inertia ixx="0.0042" iyy="0.002292" izz="0.006035" ixy="1e-05" iyz="3.2e-05" ixz="-6e-06"/>
+  </inertial>
+  <visual>
+    <origin xyz="0.020461 0.02823 -0.002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/upperbase_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0.020461 0.02823 -0.002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/upperbase_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="undergrobik_1">
+  <inertial>
+    <origin xyz="-0.06974924775773617 -0.02150028843585988 0.005536419162234567" rpy="0 0 0"/>
+    <mass value="1.661993641685309"/>
+    <inertia ixx="0.002147" iyy="0.004145" izz="0.005978" ixy="-0.0" iyz="-0.0" ixz="0.000325"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.044886 -0.030547 -0.034849" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/undergrobik_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.044886 -0.030547 -0.034849" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/undergrobik_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="BOLT2_1">
+  <inertial>
+    <origin xyz="-4.9711875373184555e-05 -0.004812811687434075 1.7615317040933776e-05" rpy="0 0 0"/>
+    <mass value="0.013021996407497143"/>
+    <inertia ixx="0.0" iyy="0.0" izz="0.0" ixy="-0.0" iyz="0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.065366 0.046563 0.041212" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/BOLT2_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.065366 0.046563 0.041212" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/BOLT2_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="BOLT3_1">
+  <inertial>
+    <origin xyz="3.0488843215728534e-05 0.005098070977968272 1.0838968526327708e-05" rpy="0 0 0"/>
+    <mass value="0.02116952060505172"/>
+    <inertia ixx="1e-06" iyy="0.0" izz="1e-06" ixy="-0.0" iyz="-0.0" ixz="0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.065366 -0.069457 0.041212" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/BOLT3_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.065366 -0.069457 0.041212" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/BOLT3_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="bolt4_1">
+  <inertial>
+    <origin xyz="3.048884321255052e-05 0.005098070977968716 1.0838968530497983e-05" rpy="0 0 0"/>
+    <mass value="0.021169520605051655"/>
+    <inertia ixx="1e-06" iyy="0.0" izz="1e-06" ixy="-0.0" iyz="-0.0" ixz="0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="0.105634 -0.069457 0.041212" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/bolt4_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0.105634 -0.069457 0.041212" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/bolt4_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="cylinder_1">
+  <inertial>
+    <origin xyz="0.008166976295251621 -0.013823610582764389 0.10270000132605119" rpy="0 0 0"/>
+    <mass value="0.019334617827252567"/>
+    <inertia ixx="4e-06" iyy="0.0" izz="4e-06" ixy="0.0" iyz="0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="0.097628 -0.021999 0.0214" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/cylinder_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0.097628 -0.021999 0.0214" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/cylinder_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="GROBIK_1">
+  <inertial>
+    <origin xyz="0.04341151293378384 -0.023912944640047222 0.022002271842127386" rpy="0 0 0"/>
+    <mass value="1.6755960567082104"/>
+    <inertia ixx="0.002059" iyy="0.003881" izz="0.005199" ixy="1.7e-05" iyz="-9e-06" ixz="-0.000218"/>
+  </inertial>
+  <visual>
+    <origin xyz="0.089461 -0.032675 -0.0813" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/GROBIK_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0.089461 -0.032675 -0.0813" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/GROBIK_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="wheel_4_1">
+  <inertial>
+    <origin xyz="-5.5969101964148393e-08 -0.010999868372742 8.489504710329498e-09" rpy="0 0 0"/>
+    <mass value="1.5689524475266878"/>
+    <inertia ixx="0.00083" iyy="0.001198" izz="0.00083" ixy="0.0" iyz="-0.0" ixz="0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="0.105634 0.066063 0.041212" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/wheel_4_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0.105634 0.066063 0.041212" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/wheel_4_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="wheel_3_1">
+  <inertial>
+    <origin xyz="-5.5969103546216203e-08 0.016980129627265653 8.489503475206384e-09" rpy="0 0 0"/>
+    <mass value="1.5689524475266883"/>
+    <inertia ixx="0.00083" iyy="0.001198" izz="0.00083" ixy="0.0" iyz="0.0" ixz="0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="0.105634 -0.082977 0.041212" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/wheel_3_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0.105634 -0.082977 0.041212" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/wheel_3_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="wheel_2_1">
+  <inertial>
+    <origin xyz="-5.596909978533571e-08 0.04698012962726562 8.489499339625617e-09" rpy="0 0 0"/>
+    <mass value="1.5689524475266887"/>
+    <inertia ixx="0.00083" iyy="0.001198" izz="0.00083" ixy="0.0" iyz="0.0" ixz="0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.065366 -0.052977 0.041212" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/wheel_2_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.065366 -0.052977 0.041212" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/wheel_2_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="wheel_1_1">
+  <inertial>
+    <origin xyz="-5.596909800897887e-08 -0.008999868372741943 8.489499707386994e-09" rpy="0 0 0"/>
+    <mass value="1.5689524475266887"/>
+    <inertia ixx="0.00083" iyy="0.001198" izz="0.00083" ixy="-0.0" iyz="-0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.065366 0.068063 0.041212" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/wheel_1_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.065366 0.068063 0.041212" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="C:/Users/user/Desktop/ALYA/ghfvjkvxcjvydfxczvzxv_description/meshes/wheel_1_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<joint name="Rigid 15" type="fixed">
+  <origin xyz="-0.020461 -0.02823 0.002" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="upperbase_1"/>
+</joint>
+
+<joint name="Rigid 16" type="fixed">
+  <origin xyz="0.065347 0.058777 0.032849" rpy="0 0 0"/>
+  <parent link="upperbase_1"/>
+  <child link="undergrobik_1"/>
+</joint>
+
+<joint name="Rigid 20" type="fixed">
+  <origin xyz="0.065366 -0.046563 -0.041212" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="BOLT2_1"/>
+</joint>
+
+<joint name="Rigid 22" type="fixed">
+  <origin xyz="0.065366 0.069457 -0.041212" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="BOLT3_1"/>
+</joint>
+
+<joint name="Rigid 24" type="fixed">
+  <origin xyz="-0.105634 0.069457 -0.041212" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="bolt4_1"/>
+</joint>
+
+<joint name="Rigid 29" type="fixed">
+  <origin xyz="-0.142514 -0.008548 -0.056249" rpy="0 0 0"/>
+  <parent link="undergrobik_1"/>
+  <child link="cylinder_1"/>
+</joint>
+
+<joint name="Revolute 30" type="revolute">
+  <origin xyz="0.008167 0.010676 0.1027" rpy="0 0 0"/>
+  <parent link="cylinder_1"/>
+  <child link="GROBIK_1"/>
+  <axis xyz="-0.0 1.0 0.0"/>
+  <limit upper="-0.0" lower="-1.570796" effort="100" velocity="100"/>
+</joint>
+
+<joint name="Revolute 39" type="continuous">
+  <origin xyz="-0.105634 -0.066063 -0.041212" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="wheel_4_1"/>
+  <axis xyz="0.0 -1.0 0.0"/>
+</joint>
+
+<joint name="Revolute 41" type="continuous">
+  <origin xyz="0.0 0.01352 0.0" rpy="0 0 0"/>
+  <parent link="bolt4_1"/>
+  <child link="wheel_3_1"/>
+  <axis xyz="0.0 1.0 0.0"/>
+</joint>
+
+<joint name="Revolute 42" type="continuous">
+  <origin xyz="0.0 -0.01648 0.0" rpy="0 0 0"/>
+  <parent link="BOLT3_1"/>
+  <child link="wheel_2_1"/>
+  <axis xyz="0.0 1.0 0.0"/>
+</joint>
+
+<joint name="Revolute 43" type="continuous">
+  <origin xyz="0.0 -0.0215 0.0" rpy="0 0 0"/>
+  <parent link="BOLT2_1"/>
+  <child link="wheel_1_1"/>
+  <axis xyz="0.0 -1.0 0.0"/>
+</joint>
+
+</robot>
